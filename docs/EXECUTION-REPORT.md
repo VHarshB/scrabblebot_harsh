@@ -83,3 +83,22 @@ Root/server development dependencies inherited audit findings; they are separate
 Final client scalability verification: an unbounded historical subscription probe timed out. The client now loads only its own participation records and subscribes to auction/word history per active match, dropping those subscriptions when the match ends. The bounded public probe then passed, including match-state and credential/rack views. Its authenticated subscription lifecycle has now been verified through a completed practice match and automatic rejoining.
 
 A clean `npm ci` in `bot-starter` followed by all 9 bot tests also passed, with zero audit vulnerabilities. The implementation is committed locally as 3e02978; no push to origin is authorized or performed.
+
+## Strategy revision and tournament registration
+
+The original strategy completed 8 live matches with 0 wins and 462 total points before replacement. Additional matches were running while evaluation proceeded. That live record prompted a new paired evaluation rather than claiming the earlier mixed-field simulation predicted live success.
+
+The new bidder blends the original valuation with deterministic Monte Carlo marginal rack value: six common-random future samples, a six-letter horizon capped to keep projected racks at 12 tiles, 50% blend, scale 1.8. Future samples use a standard bag prior, not hidden server letters. It retains seven-letter word timing because earlier six-letter cash-in underperformed. Endgame bidding prioritizes usable score gains and skips the final unplayable auction. Partition search has a 25 ms time budget and a 2,000-state cap. It is approximate on large racks.
+
+Fresh validation seeds 20000–20149, 150 games per configuration and field:
+
+| Field | Baseline score / wins | Selected rollout score / wins | Paired mean score improvement (approx. 95% CI) |
+|---|---|---|---|
+| Five original strategies | 74.13 / 19.3% | 89.07 / 39.3% | +14.93 [11.17, 18.69] |
+| Five premium-bidding strategies | 96.99 / 79.3% | 108.72 / 90.0% | +11.73 [7.73, 15.72] |
+
+These are offline results, not measured live win rates. `rollout-validation.json` preserves all four configurations across both fields (1,200 games); `rollout-training.json` and `rollout-pilot.json` preserve earlier experiments. The final configuration was checked on new seeds after initial tuning; additional holdout measurements are still appropriate before claiming general superiority. An initial two-letter-completion heuristic and early six-letter cash-in were rejected because paired tests worsened scores. The archived `baseline-strategy.ts` makes comparisons reproducible. All 13 bot tests pass. Worst measured rollout decision in the automated large-rack/normal-rack test was 7.69 ms; live observed calculations also included values around 30 ms. One late bid rejection during live resumption was handled without stopping the client.
+
+The upgraded client adds lifetime wins/matches logging and per-match score/placement records in ignored `practice-results.jsonl`, loads all participants only for active matches, guards old connection callbacks, and retries bootstrap timeouts. It resumed a running match after process replacement and automatically rejoined afterward. The first partially upgraded match, 47113, scored 58 and placed fifth; this is not evidence of a live win-rate improvement yet.
+
+On the latest check, tournament **2** opened with status **Registration**. At the user's explicit request, `TOURNAMENT_ID=2` was saved only in ignored `.env`, and the bot was switched to tournament mode. **Server-confirmed entry: tournament_id 2, bot_id 329 (Oily).** Duplicate entries and simultaneous practice matches are not supported for one bot. The client remains active as process **1952**, logs `bot-starter/tournament.log` and `bot-starter/tournament-error.log`, and will finish any existing practice match before the server seats tournament matches. Earlier process IDs 24280 and 1792 were stopped during upgrades. Keep the computer online and awake. Tournament start is controlled by the organizer, not this client.

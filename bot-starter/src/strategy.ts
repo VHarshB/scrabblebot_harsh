@@ -1,4 +1,5 @@
-import { letterValue, lengthMultiplier } from "./letters.js";
+import { letterValue, lengthMultiplier, DEFAULT_BAG } from "./letters.js";
+const PRIOR_BAG = DEFAULT_BAG.flatMap(([c, n]) => Array<string>(n).fill(c));
 export const LETTER_VALUE = Object.fromEntries(
   [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"].map((c) => [c, letterValue(c)]),
 );
@@ -15,6 +16,51 @@ export class WordEngine {
   private root: Trie = { children: new Map(), entries: [] };
   entries: Entry[];
   private cache = new Map<string, Entry[]>();
+  private rolloutCache = new Map<string, number>();
+  marginalValue(
+    rack: Map<string, number>,
+    letter: string,
+    remaining: number,
+    samples = 6,
+    horizon = 4,
+  ): number {
+    const signature = [...rack]
+      .filter(([, n]) => n > 0)
+      .sort()
+      .map(([c, n]) => c + n)
+      .join("");
+    const tiles = [...rack.values()].reduce((s, n) => s + n, 0);
+    const draws = Math.max(
+      0,
+      Math.min(horizon, Math.ceil(remaining / 7), 12 - tiles),
+    );
+    const key = `${signature}:${letter}:${draws}:${samples}`;
+    const cached = this.rolloutCache.get(key);
+    if (cached !== undefined) return cached;
+    // Common random futures make the difference much less noisy. The seed
+    // depends on the rack rather than the candidate letter or wall clock.
+    let state = 2166136261;
+    for (const c of signature)
+      state = Math.imul(state ^ c.charCodeAt(0), 16777619) >>> 0;
+    const random = () =>
+      (state = (Math.imul(state, 1664525) + 1013904223) >>> 0) / 4294967296;
+    let total = 0;
+    for (let sample = 0; sample < samples; sample++) {
+      const future = new Map(rack);
+      for (let i = 0; i < draws; i++) {
+        const c = PRIOR_BAG[Math.floor(random() * PRIOR_BAG.length)];
+        future.set(c, (future.get(c) ?? 0) + 1);
+      }
+      const before = this.playable(future)[0]?.reward ?? 0;
+      future.set(letter, (future.get(letter) ?? 0) + 1);
+      const after = this.playable(future)[0]?.reward ?? 0;
+      total += Math.max(0, after - before);
+    }
+    const value = total / samples;
+    if (this.rolloutCache.size > 5000) this.rolloutCache.clear();
+    this.rolloutCache.set(key, value);
+    return value;
+  }
   constructor(dictionary: string[]) {
     this.entries = [...new Set(dictionary)]
       .filter((w) => /^[A-Z]{2,}$/.test(w))
@@ -68,6 +114,7 @@ export class WordEngine {
   partition(rack: Map<string, number>): { score: number; word: string | null } {
     const memo = new Map<string, { score: number; word: string | null }>();
     let visits = 0;
+    const deadline = performance.now() + 25;
     const solve = (
       r: Map<string, number>,
     ): { score: number; word: string | null } => {
@@ -77,9 +124,14 @@ export class WordEngine {
         .join("");
       const old = memo.get(key);
       if (old) return old;
-      let best = { score: 0, word: null as string | null };
-      if (++visits > 2000) return best;
-      for (const e of this.playable(r)) {
+      const playable = this.playable(r);
+      let best = {
+        score: playable[0]?.reward ?? 0,
+        word: playable[0]?.word ?? null,
+      };
+      if (++visits > 2000 || performance.now() > deadline) return best;
+      for (const e of playable) {
+        if (performance.now() > deadline) break;
         const next = new Map(r);
         for (const [c, n] of e.counts) next.set(c, next.get(c)! - n);
         const score = e.reward + solve(next).score;
@@ -109,6 +161,11 @@ export interface BidContext {
   auctionType?: string;
   clearingPrice?: number;
   bidScale?: number;
+  lookaheadWeight?: number;
+  tempo?: number;
+  samples?: number;
+  horizon?: number;
+  endgameAggression?: boolean;
 }
 export function decideBid(c: BidContext): number {
   if (
@@ -131,15 +188,36 @@ export function decideBid(c: BidContext): number {
     next.set(c.letter, have + 1);
     const after = e.playable(next)[0]?.reward ?? 0;
     utility += Math.max(0, after - before) * 0.65;
+    if ((c.lookaheadWeight ?? 0.5) > 0) {
+      const marginal = e.marginalValue(
+        c.myRack,
+        c.letter,
+        c.remaining ?? 68,
+        c.samples ?? 6,
+        c.horizon ?? 6,
+      );
+      utility =
+        utility * (1 - (c.lookaheadWeight ?? 0.5)) +
+        Math.max(0, marginal + 1.5 - have * 0.5) * (c.lookaheadWeight ?? 0.5);
+    }
   }
   const remaining = c.remaining ?? 68;
+  if ((c.endgameAggression ?? true) && remaining === 0) return 0;
   const reserve = remaining > 10 ? Math.min(20, remaining / 3) : 0;
-  let bid = utility * (c.bidScale ?? 1.8);
+  let bid = utility * (c.bidScale ?? 1.8) + (c.tempo ?? 0);
   if (c.clearingPrice && utility > 5)
     bid = Math.min(bid * 1.15, Math.max(bid, c.clearingPrice + 1));
   if (c.auctionType === "FirstPrice") bid *= 0.65;
   if (remaining < 8)
     bid = Math.max(bid, c.myBalance / Math.max(1, remaining + 1));
+  if ((c.endgameAggression ?? true) && remaining < 8 && c.dictionary) {
+    const e = engine(c.dictionary);
+    const next = new Map(c.myRack);
+    next.set(c.letter, have + 1);
+    const gain = e.partition(next).score - e.partition(c.myRack).score;
+    if (gain > 0) bid = Math.max(bid, c.myBalance / Math.max(1, remaining / 4));
+    else if (remaining === 1) return 0;
+  }
   return Math.max(
     0,
     Math.min(
@@ -153,12 +231,15 @@ export interface WordContext {
   dictionary: string[];
   remaining?: number;
   myBalance?: number;
+  partitionPreference?: boolean;
 }
 export function chooseWord(c: WordContext): string | null {
   const e = engine(c.dictionary);
   const best = e.playable(c.myRack)[0];
   if (!best) return null;
   if ((c.remaining ?? 0) <= 5) return e.partition(c.myRack).word;
+  if (c.partitionPreference && best.word.length >= 7)
+    return e.partition(c.myRack).word;
   const tiles = [...c.myRack.values()].reduce((a, b) => a + b, 0);
   return best.word.length >= 7 || (c.myBalance ?? 100) < 18 || tiles >= 11
     ? best.word

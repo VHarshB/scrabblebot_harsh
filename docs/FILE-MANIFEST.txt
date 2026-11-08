@@ -166,3 +166,9 @@ tsconfig.json
 vercel.json
 vite.config.ts
 vitest.config.ts
+bot-starter/benchmark-baseline.json
+bot-starter/rollout-pilot.json
+bot-starter/rollout-training.json
+bot-starter/rollout-validation.json
+bot-starter/src/baseline-strategy.ts
+bot-starter/src/competitive-eval.ts

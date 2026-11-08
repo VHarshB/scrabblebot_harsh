@@ -80,6 +80,9 @@ const wordPending = new Set<string>();
 let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 let retry = 0;
 let active: DbConnection | undefined;
+let connectionGeneration = 0;
+let subscriptionReady = false;
+let connectionWatchdog: ReturnType<typeof setTimeout> | undefined;
 let myIdentity: Identity | null = null;
 let myBotId: bigint | null = null;
 const bidsByAuction = new Set<string>();
@@ -150,6 +153,7 @@ function tryBid(
     return;
   const participant = participantForMatch(conn, matchId);
   if (!participant) return;
+  const calculationStarted = performance.now();
   const amount = decideBid({
     letter,
     myBalance: participant.balance,
@@ -161,13 +165,23 @@ function tryBid(
     remaining: conn.db.matchState.id.find(matchId)?.bagTotal,
     auctionType: conn.db.matchState.id.find(matchId)?.auctionType.tag,
   });
+  const calculationMs = performance.now() - calculationStarted;
+  if (
+    !mayBid(
+      bidsByAuction,
+      key,
+      auction.status.tag,
+      auction.closesAt.microsSinceUnixEpoch,
+    )
+  )
+    return;
   if (amount <= 0) return;
   conn.reducers
     .submitBid({ auctionId, amount: BigInt(amount) })
     .catch(logFailure(`bid on auction ${auctionId}`));
   bidsByAuction.add(key);
   console.log(
-    `[${BOT_NAME}] bid ${amount} on '${letter}' (match ${matchId}, auction ${auctionId})`,
+    `[${BOT_NAME}] bid ${amount} on '${letter}' (match ${matchId}, auction ${auctionId}, calculation ${calculationMs.toFixed(2)} ms)`,
   );
 }
 
@@ -210,7 +224,6 @@ function onConnect(conn: DbConnection, identity: Identity, token: string) {
   ownSubscribed = false;
   subscribedMatches.clear();
   matchUnsubscribers.clear();
-  retry = 0;
   myBotId = null;
   bidsByAuction.clear();
   wordPending.clear();
@@ -270,6 +283,7 @@ function onConnect(conn: DbConnection, identity: Identity, token: string) {
     .subscribe([
       "SELECT * FROM bot",
       "SELECT * FROM bot_credential",
+      "SELECT * FROM bot_stats",
       "SELECT * FROM match_state",
       "SELECT * FROM my_rack",
       "SELECT * FROM open_lobbies",
@@ -305,6 +319,18 @@ function onConnect(conn: DbConnection, identity: Identity, token: string) {
         }),
       );
   });
+  conn.db.botStats.onUpdate((_ctx, _old, s) => {
+    if (s.botId === myBotId)
+      console.log(
+        JSON.stringify({
+          event: "lifetime_stats",
+          matches: s.matchesPlayed,
+          wins: s.wins,
+          winRate: s.matchesPlayed ? s.wins / s.matchesPlayed : 0,
+          rating: s.rating,
+        }),
+      );
+  });
   conn.db.botCredential.onInsert(() => {
     if (myBotId === null) myBotId = resolveMyBotId(conn);
   });
@@ -337,6 +363,27 @@ function onConnect(conn: DbConnection, identity: Identity, token: string) {
         (p) => p.matchId === neu.id && p.botId === myBotId,
       );
       if (wasIn) {
+        queueMicrotask(() => {
+          const players = [...conn.db.matchParticipant.iter()].filter(
+            (p) => p.matchId === neu.id,
+          );
+          const mine = players.find((p) => p.botId === myBotId);
+          if (mine) {
+            const result = {
+              event: "match_result",
+              matchId: String(neu.id),
+              score: String(mine.score),
+              balance: String(mine.balance),
+              placement: 1 + players.filter((p) => p.score > mine.score).length,
+              players: players.length,
+            };
+            console.log(JSON.stringify(result));
+            fs.appendFileSync(
+              path.join(process.cwd(), "practice-results.jsonl"),
+              JSON.stringify(result) + "\n",
+            );
+          }
+        });
         console.log(`[${BOT_NAME}] match ${neu.id} ended; rejoining lobby`);
         if (!TOURNAMENT_ID) joinLobby(conn);
       }
@@ -375,6 +422,9 @@ function bootstrapActivity(conn: DbConnection) {
       .subscribe([`SELECT * FROM match_participant WHERE bot_id = ${myBotId}`]);
     return;
   }
+  subscriptionReady = true;
+  retry = 0;
+  if (connectionWatchdog) clearTimeout(connectionWatchdog);
   subscribeMatchDetails(conn);
   if (TOURNAMENT_ID) {
     const tournament = conn.db.tournament.id.find(BigInt(TOURNAMENT_ID));
@@ -416,7 +466,7 @@ function subscribeMatchDetails(conn: DbConnection) {
         tryPlayWord(conn);
       })
       .subscribe(
-        ["auction", "auction_result", "word_play"].map(
+        ["auction", "auction_result", "word_play", "match_participant"].map(
           (table) => `SELECT * FROM ${table} WHERE match_id = ${p.matchId}`,
         ),
       );
@@ -425,6 +475,8 @@ function subscribeMatchDetails(conn: DbConnection) {
 }
 
 function main() {
+  const generation = ++connectionGeneration;
+  subscriptionReady = false;
   console.log(`[${BOT_NAME}] connecting to ${DB_NAME} at ${HOST}`);
   if (!BOT_TOKEN && !loadToken() && !BOT_NONCE)
     throw new Error(
@@ -434,21 +486,35 @@ function main() {
     .withUri(HOST)
     .withDatabaseName(DB_NAME)
     .withToken(BOT_TOKEN ?? loadToken())
-    .onConnect(onConnect)
+    .onConnect((conn, identity, token) => {
+      if (generation !== connectionGeneration) {
+        conn.disconnect();
+        return;
+      }
+      onConnect(conn, identity, token);
+    })
     .onConnectError((_ctx: ErrorContext, err: Error) => {
       console.error("connect error:", err.message);
-      scheduleReconnect();
+      if (generation === connectionGeneration) scheduleReconnect();
     })
     .onDisconnect(() => {
       console.log("disconnected");
-      scheduleReconnect();
+      if (generation === connectionGeneration) scheduleReconnect();
     })
     .build();
+  connectionWatchdog = setTimeout(() => {
+    if (generation === connectionGeneration && !subscriptionReady) {
+      console.warn("Connection bootstrap timed out");
+      scheduleReconnect();
+    }
+  }, 30000);
 }
 
 function scheduleReconnect() {
   if (reconnectTimer) return;
   myBotId = null;
+  subscriptionReady = false;
+  if (connectionWatchdog) clearTimeout(connectionWatchdog);
   reconnectTimer = setTimeout(() => {
     active?.disconnect();
     reconnectTimer = undefined;

@@ -1,0 +1,182 @@
+{
+  "seeds": [
+    7000,
+    7019
+  ],
+  "runtimeMs": 12148.9289,
+  "results": [
+    {
+      "field": "legacy",
+      "name": "baseline",
+      "legacy": true,
+      "scale": 1.8,
+      "weight": 0,
+      "matches": 20,
+      "score": 68.6,
+      "winRate": 0.1,
+      "placement": 4.05,
+      "balance": 19.45,
+      "leftover": 0.55,
+      "pairedScoreDelta": 0,
+      "confidence95": [
+        0,
+        0
+      ]
+    },
+    {
+      "field": "legacy",
+      "name": "rollout-12",
+      "scale": 1.2,
+      "weight": 1,
+      "matches": 20,
+      "score": 47.25,
+      "winRate": 0.05,
+      "placement": 5.35,
+      "balance": 36.7,
+      "leftover": 1.4,
+      "pairedScoreDelta": -21.35,
+      "confidence95": [
+        -30.948077121020265,
+        -11.751922878979737
+      ]
+    },
+    {
+      "field": "legacy",
+      "name": "rollout-18",
+      "scale": 1.8,
+      "weight": 1,
+      "matches": 20,
+      "score": 74.9,
+      "winRate": 0.15,
+      "placement": 3.65,
+      "balance": 22.4,
+      "leftover": 1.65,
+      "pairedScoreDelta": 6.3,
+      "confidence95": [
+        -6.397555206043658,
+        18.997555206043657
+      ]
+    },
+    {
+      "field": "legacy",
+      "name": "rollout-24",
+      "scale": 2.4,
+      "weight": 1,
+      "matches": 20,
+      "score": 73.9,
+      "winRate": 0.1,
+      "placement": 3.2,
+      "balance": 9.8,
+      "leftover": 1.15,
+      "pairedScoreDelta": 5.3,
+      "confidence95": [
+        -2.507826087364287,
+        13.107826087364288
+      ]
+    },
+    {
+      "field": "legacy",
+      "name": "blend",
+      "scale": 1.8,
+      "weight": 0.5,
+      "matches": 20,
+      "score": 83.3,
+      "winRate": 0.35,
+      "placement": 2.55,
+      "balance": 21.6,
+      "leftover": 0.9,
+      "pairedScoreDelta": 14.7,
+      "confidence95": [
+        3.2924951388178343,
+        26.107504861182164
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "baseline",
+      "legacy": true,
+      "scale": 1.8,
+      "weight": 0,
+      "matches": 20,
+      "score": 90.1,
+      "winRate": 0.7,
+      "placement": 1.4,
+      "balance": 29.75,
+      "leftover": 2.9,
+      "pairedScoreDelta": 0,
+      "confidence95": [
+        0,
+        0
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "rollout-12",
+      "scale": 1.2,
+      "weight": 1,
+      "matches": 20,
+      "score": 89.15,
+      "winRate": 0.8,
+      "placement": 1.45,
+      "balance": 122.55,
+      "leftover": 2.9,
+      "pairedScoreDelta": -0.95,
+      "confidence95": [
+        -12.033307686027573,
+        10.133307686027575
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "rollout-18",
+      "scale": 1.8,
+      "weight": 1,
+      "matches": 20,
+      "score": 104.3,
+      "winRate": 0.8,
+      "placement": 1.4,
+      "balance": 70.6,
+      "leftover": 2.55,
+      "pairedScoreDelta": 14.2,
+      "confidence95": [
+        2.6730387991320192,
+        25.72696120086798
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "rollout-24",
+      "scale": 2.4,
+      "weight": 1,
+      "matches": 20,
+      "score": 86.1,
+      "winRate": 0.65,
+      "placement": 1.8,
+      "balance": 25.95,
+      "leftover": 2.65,
+      "pairedScoreDelta": -4,
+      "confidence95": [
+        -16.828960658562618,
+        8.828960658562618
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "blend",
+      "scale": 1.8,
+      "weight": 0.5,
+      "matches": 20,
+      "score": 107.85,
+      "winRate": 0.95,
+      "placement": 1.05,
+      "balance": 52.5,
+      "leftover": 2.65,
+      "pairedScoreDelta": 17.75,
+      "confidence95": [
+        7.072354339925619,
+        28.427645660074383
+      ]
+    }
+  ],
+  "limitations": "Offline approximation; rotates candidate seat; premium opponents add six to old bids; targeted opponents use two-letter lookahead; all Vickrey; no network delays; ties counted as wins."
+}

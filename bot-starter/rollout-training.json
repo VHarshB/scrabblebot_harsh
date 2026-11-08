@@ -1,0 +1,220 @@
+{
+  "seeds": [
+    7000,
+    7099
+  ],
+  "runtimeMs": 99710.8633,
+  "results": [
+    {
+      "field": "legacy",
+      "name": "baseline",
+      "legacy": true,
+      "scale": 1.8,
+      "weight": 0,
+      "matches": 100,
+      "score": 72.03,
+      "winRate": 0.14,
+      "placement": 3.54,
+      "balance": 23.05,
+      "leftover": 0.79,
+      "pairedScoreDelta": 0,
+      "confidence95": [
+        0,
+        0
+      ]
+    },
+    {
+      "field": "legacy",
+      "name": "blend-quarter",
+      "scale": 1.8,
+      "weight": 0.25,
+      "matches": 100,
+      "score": 87.06,
+      "winRate": 0.36,
+      "placement": 2.52,
+      "balance": 25.34,
+      "leftover": 0.71,
+      "pairedScoreDelta": 15.03,
+      "confidence95": [
+        10.675958312583862,
+        19.384041687416136
+      ]
+    },
+    {
+      "field": "legacy",
+      "name": "blend-half",
+      "scale": 1.8,
+      "weight": 0.5,
+      "matches": 100,
+      "score": 86.64,
+      "winRate": 0.34,
+      "placement": 2.61,
+      "balance": 23.53,
+      "leftover": 1,
+      "pairedScoreDelta": 14.61,
+      "confidence95": [
+        10.019568145312984,
+        19.200431854687015
+      ]
+    },
+    {
+      "field": "legacy",
+      "name": "blend-half-h6",
+      "scale": 1.8,
+      "weight": 0.5,
+      "horizon": 6,
+      "matches": 100,
+      "score": 87.62,
+      "winRate": 0.42,
+      "placement": 2.54,
+      "balance": 22.22,
+      "leftover": 1.13,
+      "pairedScoreDelta": 15.59,
+      "confidence95": [
+        10.445414737254657,
+        20.73458526274534
+      ]
+    },
+    {
+      "field": "legacy",
+      "name": "blend-threequarters",
+      "scale": 1.8,
+      "weight": 0.75,
+      "matches": 100,
+      "score": 83.77,
+      "winRate": 0.35,
+      "placement": 2.76,
+      "balance": 24.85,
+      "leftover": 1.28,
+      "pairedScoreDelta": 11.74,
+      "confidence95": [
+        6.851645547742157,
+        16.628354452257845
+      ]
+    },
+    {
+      "field": "legacy",
+      "name": "blend-half-partition",
+      "scale": 1.8,
+      "weight": 0.5,
+      "partitionPreference": true,
+      "matches": 100,
+      "score": 86.83,
+      "winRate": 0.33,
+      "placement": 2.62,
+      "balance": 23.65,
+      "leftover": 1.01,
+      "pairedScoreDelta": 14.8,
+      "confidence95": [
+        10.199004868289885,
+        19.40099513171012
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "baseline",
+      "legacy": true,
+      "scale": 1.8,
+      "weight": 0,
+      "matches": 100,
+      "score": 98.92,
+      "winRate": 0.77,
+      "placement": 1.35,
+      "balance": 35.49,
+      "leftover": 2.87,
+      "pairedScoreDelta": 0,
+      "confidence95": [
+        0,
+        0
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "blend-quarter",
+      "scale": 1.8,
+      "weight": 0.25,
+      "matches": 100,
+      "score": 102.79,
+      "winRate": 0.81,
+      "placement": 1.3,
+      "balance": 41.42,
+      "leftover": 2.7,
+      "pairedScoreDelta": 3.87,
+      "confidence95": [
+        -1.4001886391784168,
+        9.140188639178417
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "blend-half",
+      "scale": 1.8,
+      "weight": 0.5,
+      "matches": 100,
+      "score": 105.6,
+      "winRate": 0.85,
+      "placement": 1.21,
+      "balance": 41.81,
+      "leftover": 2.82,
+      "pairedScoreDelta": 6.68,
+      "confidence95": [
+        1.7257857831269883,
+        11.634214216873012
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "blend-half-h6",
+      "scale": 1.8,
+      "weight": 0.5,
+      "horizon": 6,
+      "matches": 100,
+      "score": 108.81,
+      "winRate": 0.88,
+      "placement": 1.14,
+      "balance": 48.61,
+      "leftover": 2.77,
+      "pairedScoreDelta": 9.89,
+      "confidence95": [
+        4.617585280332966,
+        15.162414719667035
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "blend-threequarters",
+      "scale": 1.8,
+      "weight": 0.75,
+      "matches": 100,
+      "score": 110.18,
+      "winRate": 0.91,
+      "placement": 1.12,
+      "balance": 50.17,
+      "leftover": 2.82,
+      "pairedScoreDelta": 11.26,
+      "confidence95": [
+        6.753883784019859,
+        15.76611621598014
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "blend-half-partition",
+      "scale": 1.8,
+      "weight": 0.5,
+      "partitionPreference": true,
+      "matches": 100,
+      "score": 105.35,
+      "winRate": 0.85,
+      "placement": 1.21,
+      "balance": 41.9,
+      "leftover": 2.84,
+      "pairedScoreDelta": 6.43,
+      "confidence95": [
+        1.5368346736793095,
+        11.32316532632069
+      ]
+    }
+  ],
+  "limitations": "Offline approximation; rotates candidate seat; premium opponents add six to old bids; targeted opponents use two-letter lookahead; all Vickrey; no network delays; ties counted as wins."
+}
