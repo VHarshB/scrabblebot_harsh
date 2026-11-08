@@ -70,16 +70,16 @@ Keep scale 1.8: scale 2.4's paired self-play score difference is -1.55, approxim
 
 ## Remaining account actions and status
 
-No bot JWT was supplied or found. No authenticated practice match has run. No tournament registration has occurred. No bot process is left running. The screenshot contains a browser identity, which is not a bot credential.
+The account was linked using the authenticated SpacetimeDB CLI, and the user saved the bot JWT locally in ignored `bot-starter/.env`. Authentication succeeded for **Oily, bot ID 329**. No token was printed or committed.
 
-1. Use the installed CLI to log in and complete the account page's linking command.
-2. Create/join a team at `https://scrabblebot.spacetimedb.com/team`, generate a bot token, and save it locally in `bot-starter/.env` as `BOT_TOKEN`. Never send it in chat.
-3. Run `npm start --prefix bot-starter` for practice, or tell the agent the local token is saved so authenticated verification can resume.
-4. After a successful real practice match, set a real registration-open `TOURNAMENT_ID` and restart. ID 1 cannot currently be entered because it has ended.
-5. Publication to GitHub remains unperformed pending authorization. The original remote is preserved.
+Real practice match **46974** ended with **59 points, balance 14, placement 6 of 6**. Server-confirmed words were EPHEDRA (39), PAIK (16), and DIG (4). Opponent scores were 123, 96, 70, 70, and 66. This demonstrates working connectivity and word/bid reducers, but does not demonstrate competitive strength. Offline mixed-field results substantially overstate performance against the actual live field; further tuning needs stronger opponent models and repeated live measurements.
+
+The bot automatically rejoined and started match **46989**, with ARMLOCK and HOGTIE already confirmed. Persistent hidden Node process **24280** remains running locally. Output: `bot-starter/practice.log`; errors: `bot-starter/practice-error.log`; PID: ignored `bot-starter/.bot.pid`. No reducer errors were logged during the first completed match. Keep this computer awake and online. To stop this specific process from PowerShell, run `Stop-Process -Id 24280`. To restart after stopping, run `npm start --prefix bot-starter`.
+
+Tournament status was rechecked after practice: only tournament **1**, status **Ended**. No registration was attempted or claimed. Remaining work is competitive tuning, authenticated reconnect stress testing, registration when a real tournament opens, and GitHub publication after authorization.
 
 Root/server development dependencies inherited audit findings; they are separate from the zero-vulnerability bot dependency set. The web/server has not been published or changed on the live service.
 
-Final client scalability verification: an unbounded historical subscription probe timed out. The client now loads only its own participation records and subscribes to auction/word history per active match, dropping those subscriptions when the match ends. The bounded public probe then passed, including match-state and credential/rack views. Its authenticated subscription lifecycle still needs the bot JWT for integration verification.
+Final client scalability verification: an unbounded historical subscription probe timed out. The client now loads only its own participation records and subscribes to auction/word history per active match, dropping those subscriptions when the match ends. The bounded public probe then passed, including match-state and credential/rack views. Its authenticated subscription lifecycle has now been verified through a completed practice match and automatic rejoining.
 
-A clean `npm ci` in `bot-starter` followed by all 9 bot tests also passed, with zero audit vulnerabilities. A local implementation commit is prepared; no push to origin is authorized or performed.
+A clean `npm ci` in `bot-starter` followed by all 9 bot tests also passed, with zero audit vulnerabilities. The implementation is committed locally as 3e02978; no push to origin is authorized or performed.

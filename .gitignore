@@ -16,3 +16,4 @@ bot-starter/src/module_bindings/
 
 
 .tools/
+bot-starter/.bot.pid
