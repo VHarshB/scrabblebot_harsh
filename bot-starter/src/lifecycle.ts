@@ -20,3 +20,10 @@ export function tournamentId(value: string | undefined): bigint | undefined {
     throw new Error("TOURNAMENT_ID must be a positive integer");
   return BigInt(value);
 }
+export function mayPractice(
+  entries: { status: string; eliminated: boolean }[],
+): boolean {
+  return !entries.some(
+    (e) => !e.eliminated && ["Swiss", "Bracket", "Final"].includes(e.status),
+  );
+}

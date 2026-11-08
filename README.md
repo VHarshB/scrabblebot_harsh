@@ -65,3 +65,9 @@ For a new clone, install the official SpacetimeDB CLI separately if you need acc
 The current bidder uses a deterministic rollout blend tested against the archived original strategy. Run `npm run build --prefix bot-starter` followed by `node bot-starter/dist/competitive-eval.js`; set `EVAL_MATCHES` to control sample size. Detailed fresh-seed results are in `bot-starter/rollout-validation.json`. The bot logs actual score, placement, and lifetime win counts. Simulation results are not live win rates.
 
 Oily is currently registered for tournament 2 with server confirmation. `.env` selects tournament mode, which waits for organizer-created matches rather than continuously joining practice. One bot cannot enter multiple simultaneous matches or register repeatedly for additional seats. Current logs are `bot-starter/tournament.log` and `bot-starter/tournament-error.log`; the local process ID is in ignored `bot-starter/.bot.pid`.
+
+## Current tournament readiness
+
+The current process is 25780 and logs to `bot-starter/tournament-ready.log` / `tournament-ready-error.log`. `TOURNAMENT_ID=2` and `PRACTICE_DURING_REGISTRATION=false` are configured locally. This disables practice autojoining while waiting for the organizer. Keep the computer awake and online. After the tournament, clear `TOURNAMENT_ID` or explicitly enable practice, then restart if you want practice again.
+
+The client now subscribes only to its own match-state rows through a server-side join. Public price observations persist in ignored `.market-state.json`; match summaries trigger bounded, idempotent parameter updates. The forced market-price floor was rejected after evaluation and is disabled in the deployed client. Ratings and wins remain server-earned outcomes.

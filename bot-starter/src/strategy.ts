@@ -166,8 +166,13 @@ export interface BidContext {
   samples?: number;
   horizon?: number;
   endgameAggression?: boolean;
+  marketTarget?: number;
+  adaptiveScale?: number;
+  policy?:'rollout'|'balanced';
+  balancedScale?:number;
 }
 export function decideBid(c: BidContext): number {
+  if(c.policy==='balanced')return decideBalancedBid(c);
   if (
     !Number.isFinite(c.myBalance) ||
     c.myBalance <= 0 ||
@@ -203,10 +208,25 @@ export function decideBid(c: BidContext): number {
   }
   const remaining = c.remaining ?? 68;
   if ((c.endgameAggression ?? true) && remaining === 0) return 0;
-  const reserve = remaining > 10 ? Math.min(20, remaining / 3) : 0;
+  const reserve =
+    remaining > 10 ? Math.min(20, remaining / 3, c.myBalance * 0.15) : 0;
   let bid = utility * (c.bidScale ?? 1.8) + (c.tempo ?? 0);
   if (c.clearingPrice && utility > 5)
     bid = Math.min(bid * 1.15, Math.max(bid, c.clearingPrice + 1));
+  // A low face value does not make a versatile tile unimportant. Use only
+  // public clearing prices; duplicated tiles and imbalanced racks don't get
+  // the market floor. Keep enough liquidity to avoid one ruinous purchase.
+  if (
+    c.marketTarget &&
+    "AEINORSTLC".includes(c.letter) &&
+    have < 2 &&
+    remaining > 5
+  ) {
+    const vowel = "AEIOU".includes(c.letter);
+    if (!vowel || vowels <= Math.max(2, tiles * 0.5))
+      bid = Math.max(bid, Math.min(c.marketTarget, c.myBalance * 0.3));
+  }
+  bid *= c.adaptiveScale ?? 1;
   if (c.auctionType === "FirstPrice") bid *= 0.65;
   if (remaining < 8)
     bid = Math.max(bid, c.myBalance / Math.max(1, remaining + 1));
@@ -225,6 +245,24 @@ export function decideBid(c: BidContext): number {
       Math.floor(Math.min(bid, Math.max(1, c.myBalance - reserve))),
     ),
   );
+}
+export function decideBalancedBid(c:BidContext):number {
+  const value=LETTER_VALUE[c.letter];const remaining=c.remaining??68;
+  if(!value||!Number.isFinite(c.myBalance)||c.myBalance<=0||remaining===0)return 0;
+  const have=c.myRack.get(c.letter)??0;
+  const tiles=[...c.myRack.values()].reduce((s,n)=>s+n,0);
+  const vowels=[...'AEIOU'].reduce((s,l)=>s+(c.myRack.get(l)??0),0);
+  let base=(8+value*1.2)*0.75**have;
+  if('AEIOU'.includes(c.letter)){if(vowels<tiles*0.3+0.5)base+=2;else if(vowels>tiles*0.6+1)base*=0.7;}
+  if(c.letter==='Q'&&!c.myRack.get('U'))base*=0.4;
+  let gain=0;
+  if(c.dictionary){const e=engine(c.dictionary);const after=new Map(c.myRack);after.set(c.letter,have+1);gain=Math.max(0,(e.playable(after)[0]?.reward??0)-(e.playable(c.myRack)[0]?.reward??0));base+=gain*0.7;const marginal=e.marginalValue(c.myRack,c.letter,remaining,6,6);base+=Math.max(0,marginal-gain)*0.35;}
+  let bid=base*(c.balancedScale??1)*(c.adaptiveScale??1);
+  if(c.auctionType==='FirstPrice')bid*=0.65;
+  if(remaining<8&&gain>0)bid=Math.max(bid,c.myBalance/Math.max(1,remaining/4));
+  if(remaining===1&&gain===0)return 0;
+  const reserve=remaining>10?Math.min(10,c.myBalance*0.1):0;
+  return Math.max(0,Math.floor(Math.min(c.myBalance-reserve,bid)));
 }
 export interface WordContext {
   myRack: Map<string, number>;

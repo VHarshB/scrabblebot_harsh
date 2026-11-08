@@ -1,0 +1,160 @@
+{
+  "seeds": [
+    50000,
+    50029
+  ],
+  "runtimeMs": 235987.63030000002,
+  "results": [
+    {
+      "field": "legacy",
+      "name": "v2",
+      "legacy": true,
+      "scale": 1.8,
+      "weight": 0.5,
+      "matches": 30,
+      "score": 73.66666666666667,
+      "winRate": 0.23333333333333334,
+      "placement": 3.566666666666667,
+      "balance": 38.233333333333334,
+      "leftover": 0.6,
+      "pairedScoreDelta": 0,
+      "confidence95": [
+        0,
+        0
+      ]
+    },
+    {
+      "field": "legacy",
+      "name": "balanced-09",
+      "scale": 1.8,
+      "weight": 0.5,
+      "policy": "balanced",
+      "balancedScale": 0.9,
+      "matches": 30,
+      "score": 73.5,
+      "winRate": 0.2,
+      "placement": 3.7666666666666666,
+      "balance": 39.56666666666667,
+      "leftover": 0.23333333333333334,
+      "pairedScoreDelta": -0.16666666666666666,
+      "confidence95": [
+        -9.893891470046038,
+        9.560558136712705
+      ]
+    },
+    {
+      "field": "legacy",
+      "name": "balanced-10",
+      "scale": 1.8,
+      "weight": 0.5,
+      "policy": "balanced",
+      "balancedScale": 1,
+      "matches": 30,
+      "score": 80.66666666666667,
+      "winRate": 0.13333333333333333,
+      "placement": 3.2666666666666666,
+      "balance": 15.933333333333334,
+      "leftover": 0.6666666666666666,
+      "pairedScoreDelta": 7,
+      "confidence95": [
+        -1.548608813349583,
+        15.548608813349583
+      ]
+    },
+    {
+      "field": "legacy",
+      "name": "balanced-12",
+      "scale": 1.8,
+      "weight": 0.5,
+      "policy": "balanced",
+      "balancedScale": 1.2,
+      "matches": 30,
+      "score": 73.13333333333334,
+      "winRate": 0.13333333333333333,
+      "placement": 3.7,
+      "balance": 4.3,
+      "leftover": 0.9333333333333333,
+      "pairedScoreDelta": -0.5333333333333333,
+      "confidence95": [
+        -9.689360727342525,
+        8.622694060675858
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "v2",
+      "legacy": true,
+      "scale": 1.8,
+      "weight": 0.5,
+      "matches": 30,
+      "score": 106.2,
+      "winRate": 0.8666666666666667,
+      "placement": 1.1333333333333333,
+      "balance": 53,
+      "leftover": 1.7333333333333334,
+      "pairedScoreDelta": 0,
+      "confidence95": [
+        0,
+        0
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "balanced-09",
+      "scale": 1.8,
+      "weight": 0.5,
+      "policy": "balanced",
+      "balancedScale": 0.9,
+      "matches": 30,
+      "score": 114.36666666666666,
+      "winRate": 0.9333333333333333,
+      "placement": 1.1333333333333333,
+      "balance": 55.1,
+      "leftover": 1.2333333333333334,
+      "pairedScoreDelta": 8.166666666666666,
+      "confidence95": [
+        2.100315658079463,
+        14.233017675253869
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "balanced-10",
+      "scale": 1.8,
+      "weight": 0.5,
+      "policy": "balanced",
+      "balancedScale": 1,
+      "matches": 30,
+      "score": 110.6,
+      "winRate": 0.9333333333333333,
+      "placement": 1.1666666666666667,
+      "balance": 28.066666666666666,
+      "leftover": 1.6333333333333333,
+      "pairedScoreDelta": 4.4,
+      "confidence95": [
+        -4.0762983896748555,
+        12.876298389674856
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "balanced-12",
+      "scale": 1.8,
+      "weight": 0.5,
+      "policy": "balanced",
+      "balancedScale": 1.2,
+      "matches": 30,
+      "score": 75.26666666666667,
+      "winRate": 0.36666666666666664,
+      "placement": 2.433333333333333,
+      "balance": 2.3,
+      "leftover": 1.9,
+      "pairedScoreDelta": -30.933333333333334,
+      "confidence95": [
+        -40.26997201241666,
+        -21.596694654250012
+      ]
+    }
+  ],
+  "limitations": "Offline approximation; rotates candidate seat; premium opponents add six to old bids; targeted opponents use two-letter lookahead; all Vickrey; no network delays; ties counted as wins."
+}

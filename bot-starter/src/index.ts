@@ -1,4 +1,10 @@
-import { mayBid, reconnectDelay, tournamentId } from "./lifecycle.js";
+import {
+  mayBid,
+  reconnectDelay,
+  tournamentId,
+  mayPractice,
+} from "./lifecycle.js";
+import { AdaptiveMarket } from "./adaptive-market.js";
 import "./env.js";
 // ScrabbleBot bot starter.
 //
@@ -39,7 +45,11 @@ if (!/^[a-zA-Z0-9_-]+$/.test(BOT_NAME)) throw new Error("Invalid BOT_NAME");
 const BOT_TOKEN = process.env.BOT_TOKEN?.trim() || undefined;
 const BOT_NONCE = process.env.BOT_NONCE?.trim() || undefined;
 const TOURNAMENT_ID = tournamentId(process.env.TOURNAMENT_ID);
+const PRACTICE_DURING_REGISTRATION=process.env.PRACTICE_DURING_REGISTRATION!=="false";
 const TOKEN_PATH = path.join(process.cwd(), `.token-${BOT_NAME}`);
+const market = new AdaptiveMarket(
+  path.join(process.cwd(), ".market-state.json"),
+);
 
 function loadToken(): string | undefined {
   try {
@@ -157,6 +167,8 @@ function tryBid(
   const amount = decideBid({
     letter,
     myBalance: participant.balance,
+    marketTarget: 0,
+    adaptiveScale: market.state.scale,
     clearingPrice: prices
       .get(String(matchId))
       ?.reduce((s, n, _, a) => s + n / a.length, 0),
@@ -284,7 +296,6 @@ function onConnect(conn: DbConnection, identity: Identity, token: string) {
       "SELECT * FROM bot",
       "SELECT * FROM bot_credential",
       "SELECT * FROM bot_stats",
-      "SELECT * FROM match_state",
       "SELECT * FROM my_rack",
       "SELECT * FROM open_lobbies",
       "SELECT * FROM open_lobby_members",
@@ -337,6 +348,7 @@ function onConnect(conn: DbConnection, identity: Identity, token: string) {
   conn.db.auctionResult.onInsert((_ctx, r) => {
     if (myBotId === null) return;
     const history = prices.get(String(r.matchId)) ?? [];
+    market.observe(r.letter, Number(r.paid), String(r.auctionId));
     history.push(Number(r.paid));
     if (history.length > 20) history.shift();
     prices.set(String(r.matchId), history);
@@ -378,21 +390,48 @@ function onConnect(conn: DbConnection, identity: Identity, token: string) {
               players: players.length,
             };
             console.log(JSON.stringify(result));
-            fs.appendFileSync(
-              path.join(process.cwd(), "practice-results.jsonl"),
-              JSON.stringify(result) + "\n",
-            );
+            if (
+              market.complete({
+                ...result,
+                score: Number(mine.score),
+                balance: Number(mine.balance),
+              })
+            )
+              console.log(
+                JSON.stringify({
+                  event: "post_match_update",
+                  scale: market.state.scale,
+                  observations: market.state.matches.length,
+                }),
+              );
+            try {
+              fs.appendFileSync(
+                path.join(process.cwd(), "practice-results.jsonl"),
+                JSON.stringify(result) + "\n",
+              );
+            } catch {
+              console.warn("Could not append match-result log");
+            }
           }
         });
         console.log(`[${BOT_NAME}] match ${neu.id} ended; rejoining lobby`);
-        if (!TOURNAMENT_ID) joinLobby(conn);
+        joinLobby(conn);
       }
     }
   });
 }
 
 function joinLobby(conn: DbConnection) {
+  if(TOURNAMENT_ID&&!PRACTICE_DURING_REGISTRATION)return;
   if (myBotId === null) return;
+  const entries = [...conn.db.tournamentEntry.iter()]
+    .filter((e) => e.botId === myBotId)
+    .map((e) => ({
+      status:
+        conn.db.tournament.id.find(e.tournamentId)?.status.tag ?? "Unknown",
+      eliminated: e.eliminated,
+    }));
+  if (!mayPractice(entries)) return;
   const inRunning = Array.from(conn.db.matchParticipant.iter()).some((p) => {
     if (p.botId !== myBotId) return false;
     const m = conn.db.matchState.id.find(p.matchId);
@@ -419,7 +458,10 @@ function bootstrapActivity(conn: DbConnection) {
       .subscriptionBuilder()
       .onError(() => scheduleReconnect())
       .onApplied(() => bootstrapActivity(conn))
-      .subscribe([`SELECT * FROM match_participant WHERE bot_id = ${myBotId}`]);
+      .subscribe([
+        `SELECT * FROM match_participant WHERE bot_id = ${myBotId}`,
+        `SELECT match_state.* FROM match_state JOIN match_participant ON match_state.id = match_participant.match_id WHERE match_participant.bot_id = ${myBotId}`,
+      ]);
     return;
   }
   subscriptionReady = true;
@@ -431,14 +473,24 @@ function bootstrapActivity(conn: DbConnection) {
     console.log(
       `[${BOT_NAME}] tournament ${TOURNAMENT_ID} status: ${tournament?.status.tag ?? "unknown"}`,
     );
-    conn.reducers
-      .registerForTournament({ tournamentId: BigInt(TOURNAMENT_ID) })
-      .then(() =>
-        console.log(`[${BOT_NAME}] registered for tournament ${TOURNAMENT_ID}`),
-      )
-      .catch(logFailure(`registering for tournament ${TOURNAMENT_ID}`));
+    const registered = [...conn.db.tournamentEntry.iter()].some(
+      (e) => e.botId === myBotId && e.tournamentId === TOURNAMENT_ID,
+    );
+    if (registered)
+      console.log(
+        `[${BOT_NAME}] tournament ${TOURNAMENT_ID} entry confirmed from server subscription`,
+      );
+    else if (tournament?.status.tag === "Registration")
+      conn.reducers
+        .registerForTournament({ tournamentId: BigInt(TOURNAMENT_ID) })
+        .then(() =>
+          console.log(
+            `[${BOT_NAME}] registered for tournament ${TOURNAMENT_ID}`,
+          ),
+        )
+        .catch(logFailure(`registering for tournament ${TOURNAMENT_ID}`));
   }
-  if (!TOURNAMENT_ID) joinLobby(conn);
+  joinLobby(conn);
   for (const a of conn.db.auction.iter()) {
     if (a.status.tag === "Open") tryBid(conn, a.id, a.matchId, a.letter);
   }
@@ -528,7 +580,7 @@ setInterval(() => {
   }
 }, 100);
 setInterval(() => {
-  if (active?.isActive && myBotId !== null && !TOURNAMENT_ID) joinLobby(active);
+  if (active?.isActive && myBotId !== null) joinLobby(active);
 }, 5000);
 setInterval(
   () =>

@@ -18,3 +18,4 @@ bot-starter/src/module_bindings/
 .tools/
 bot-starter/.bot.pid
 bot-starter/practice-results.jsonl
+bot-starter/.market-state.json*

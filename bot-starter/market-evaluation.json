@@ -1,0 +1,204 @@
+{
+  "seeds": [
+    40000,
+    40049
+  ],
+  "runtimeMs": 289921.75899999996,
+  "results": [
+    {
+      "field": "legacy",
+      "name": "v2",
+      "legacy": true,
+      "scale": 1.8,
+      "weight": 0.5,
+      "matches": 50,
+      "score": 80.56,
+      "winRate": 0.2,
+      "placement": 3.1,
+      "balance": 32.4,
+      "leftover": 0.4,
+      "pairedScoreDelta": 0,
+      "confidence95": [
+        0,
+        0
+      ]
+    },
+    {
+      "field": "legacy",
+      "name": "liquidity-fix",
+      "scale": 1.8,
+      "weight": 0.5,
+      "horizon": 6,
+      "endgameAggression": true,
+      "matches": 50,
+      "score": 81.12,
+      "winRate": 0.2,
+      "placement": 3.1,
+      "balance": 30.86,
+      "leftover": 0.34,
+      "pairedScoreDelta": 0.56,
+      "confidence95": [
+        -0.3971905557411224,
+        1.5171905557411225
+      ]
+    },
+    {
+      "field": "legacy",
+      "name": "market-08",
+      "scale": 1.8,
+      "weight": 0.5,
+      "horizon": 6,
+      "endgameAggression": true,
+      "marketMultiplier": 0.8,
+      "matches": 50,
+      "score": 86.08,
+      "winRate": 0.3,
+      "placement": 2.82,
+      "balance": 12.7,
+      "leftover": 0.48,
+      "pairedScoreDelta": 5.52,
+      "confidence95": [
+        -0.8172208924732933,
+        11.857220892473293
+      ]
+    },
+    {
+      "field": "legacy",
+      "name": "market-10",
+      "scale": 1.8,
+      "weight": 0.5,
+      "horizon": 6,
+      "endgameAggression": true,
+      "marketMultiplier": 1,
+      "matches": 50,
+      "score": 70.36,
+      "winRate": 0.12,
+      "placement": 3.78,
+      "balance": 10.72,
+      "leftover": 0.56,
+      "pairedScoreDelta": -10.2,
+      "confidence95": [
+        -15.526774633866165,
+        -4.873225366133835
+      ]
+    },
+    {
+      "field": "legacy",
+      "name": "market-12",
+      "scale": 1.8,
+      "weight": 0.5,
+      "horizon": 6,
+      "endgameAggression": true,
+      "marketMultiplier": 1.2,
+      "matches": 50,
+      "score": 67.8,
+      "winRate": 0.08,
+      "placement": 4.36,
+      "balance": 9.96,
+      "leftover": 0.44,
+      "pairedScoreDelta": -12.76,
+      "confidence95": [
+        -17.830879623891697,
+        -7.689120376108303
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "v2",
+      "legacy": true,
+      "scale": 1.8,
+      "weight": 0.5,
+      "matches": 50,
+      "score": 109.96,
+      "winRate": 0.9,
+      "placement": 1.12,
+      "balance": 52.42,
+      "leftover": 1.22,
+      "pairedScoreDelta": 0,
+      "confidence95": [
+        0,
+        0
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "liquidity-fix",
+      "scale": 1.8,
+      "weight": 0.5,
+      "horizon": 6,
+      "endgameAggression": true,
+      "matches": 50,
+      "score": 107.78,
+      "winRate": 0.86,
+      "placement": 1.18,
+      "balance": 51.6,
+      "leftover": 1.36,
+      "pairedScoreDelta": -2.18,
+      "confidence95": [
+        -5.0126757385906355,
+        0.6526757385906357
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "market-08",
+      "scale": 1.8,
+      "weight": 0.5,
+      "horizon": 6,
+      "endgameAggression": true,
+      "marketMultiplier": 0.8,
+      "matches": 50,
+      "score": 82.38,
+      "winRate": 0.5,
+      "placement": 1.88,
+      "balance": 6.96,
+      "leftover": 1.58,
+      "pairedScoreDelta": -27.58,
+      "confidence95": [
+        -35.45095688210779,
+        -19.709043117892207
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "market-10",
+      "scale": 1.8,
+      "weight": 0.5,
+      "horizon": 6,
+      "endgameAggression": true,
+      "marketMultiplier": 1,
+      "matches": 50,
+      "score": 65.76,
+      "winRate": 0.3,
+      "placement": 2.74,
+      "balance": 3.74,
+      "leftover": 1.74,
+      "pairedScoreDelta": -44.2,
+      "confidence95": [
+        -51.51116406600208,
+        -36.888835933997925
+      ]
+    },
+    {
+      "field": "premium",
+      "name": "market-12",
+      "scale": 1.8,
+      "weight": 0.5,
+      "horizon": 6,
+      "endgameAggression": true,
+      "marketMultiplier": 1.2,
+      "matches": 50,
+      "score": 63.86,
+      "winRate": 0.3,
+      "placement": 2.86,
+      "balance": 4.82,
+      "leftover": 1.66,
+      "pairedScoreDelta": -46.1,
+      "confidence95": [
+        -53.54721048447001,
+        -38.652789515529996
+      ]
+    }
+  ],
+  "limitations": "Offline approximation; rotates candidate seat; premium opponents add six to old bids; targeted opponents use two-letter lookahead; all Vickrey; no network delays; ties counted as wins."
+}

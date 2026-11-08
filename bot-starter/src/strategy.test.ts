@@ -118,3 +118,14 @@ test("rollout bidding stays below the one-second deadline on ordinary and large 
   console.log(`Worst rollout decision: ${worst.toFixed(2)} ms`);
   assert.ok(worst < 250, `decision exceeded 250 ms: ${worst}`);
 });
+
+test("low liquidity still permits a word-unlocking bid", () => {
+  const b = decideBid({
+    letter: "T",
+    myBalance: 15,
+    myRack: rack("CA"),
+    dictionary: ["CAT"],
+    remaining: 40,
+  });
+  assert.ok(b > 1 && b <= 15);
+});
